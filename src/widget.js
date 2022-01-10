@@ -1,6 +1,7 @@
-import widgetHtml from './assets/widget.html';
+import getHtml from './assets/widget';
 import widgetCss from './assets/styles.css';
 import circleOpenSvg from './assets/circle-open.svg';
+import translations from './language';
 
 /**
  * RemoteStorage connect widget
@@ -21,10 +22,14 @@ const Widget = function(remoteStorage, options={}) {
   this.autoCloseAfter = options.autoCloseAfter ? options.autoCloseAfter : 1500;
   this.skipInitial    = options.skipInitial ? options.skipInitial : false;
   this.logging        = options.logging ? options.logging : false;
+  this.trans          = translations[options.language ? options.language : 'en']
+  this.displayRsSync  = options.hasOwnProperty("displayRsSync") ? options.displayRsSync : true
+  this.displayDropbox = options.hasOwnProperty("displayDropbox") ? options.displayDropbox : true
+  this.displayGDrive  = options.hasOwnProperty("displayGDrive") ? options.displayGDrive : true
 
   if (options.hasOwnProperty('modalBackdrop')) {
     if (typeof options.modalBackdrop !== 'boolean' && options.modalBackdrop !== 'onlySmallScreens') {
-      throw 'options.modalBackdrop has to be true/false or "onlySmallScreens"'
+      throw this.trans.modalBackdropError
     }
     this.modalBackdrop  = options.modalBackdrop;
   } else {
@@ -64,7 +69,7 @@ Widget.prototype = {
         this.rsSyncButton.classList.add("rs-rotate");
         setTimeout(() => {
           if (!this.syncInProgress) return;
-          this.rsConnectedLabel.textContent = 'Synchronizing';
+          this.rsConnectedLabel.textContent = this.trans.synchronizing;
         }, 1000);
         break;
       case 'sync-done':
@@ -76,7 +81,7 @@ Widget.prototype = {
           this.updateLastSyncedOutput();
         } else if (this.rs.remote.online) {
           this.lastSynced = new Date();
-          this.rsConnectedLabel.textContent = 'Synced just now';
+          this.rsConnectedLabel.textContent = this.trans.synchedJustNow;
         }
 
         if (!this.closed && this.shouldCloseWhenSyncDone) {
@@ -104,7 +109,7 @@ Widget.prototype = {
         let connectedUser = this.rs.remote.userAddress;
         this.rsConnectedUser.innerHTML = connectedUser;
         this.setBackendClass(this.rs.backend);
-        this.rsConnectedLabel.textContent = 'Connected';
+        this.rsConnectedLabel.textContent = this.trans.connected;
         this.setState('connected');
         break;
       case 'network-offline':
@@ -175,11 +180,25 @@ Widget.prototype = {
   createHtmlTemplate () {
     const element = document.createElement('div');
     element.id = "remotestorage-widget";
-    element.innerHTML = widgetHtml;
+    element.innerHTML = getHtml(this.trans);
 
     const style = document.createElement('style');
     style.innerHTML = widgetCss;
     element.appendChild(style);
+
+    const rsChooseButton = element.getElementsByClassName('rs-choose-rs')[0]
+    if(!this.displayRsSync){
+      rsChooseButton.style.display = "none"
+    }
+    const dropboxChooseButton = element.getElementsByClassName('rs-choose-dropbox')[0]
+    if(!this.displayDropbox){
+      dropboxChooseButton.style.display = "none"
+    }
+
+    const gdriveChooseButton = element.getElementsByClassName('rs-choose-googledrive')[0]
+    if(!this.displayGDrive){
+      gdriveChooseButton.style.display = "none"
+    }
 
     return element;
   },
@@ -335,7 +354,11 @@ Widget.prototype = {
     this.rsChooseGoogleDriveButton.addEventListener('click', () => this.rs["googledrive"].connect() );
 
     // Disconnect button
-    this.rsDisconnectButton.addEventListener('click', () => this.rs.disconnect() );
+    this.rsDisconnectButton.addEventListener('click', () => {
+      if(confirm(this.trans.areYouSure)){
+        this.rs.disconnect()
+      }
+    }  );
 
     this.rsErrorReconnectLink.addEventListener('click', () => this.rs.reconnect() );
     this.rsErrorDisconnectButton.addEventListener('click', () => this.rs.disconnect() );
@@ -436,7 +459,7 @@ Widget.prototype = {
     this.rsConnectButton.disabled = true;
     this.rsConnectButton.classList.add('rs-connecting');
     const circleSpinner = circleOpenSvg;
-    this.rsConnectButton.innerHTML = `Connecting ${circleSpinner}`;
+    this.rsConnectButton.innerHTML = `${this.trans.connecting} ${circleSpinner}`;
   },
 
   /**
@@ -446,7 +469,7 @@ Widget.prototype = {
    */
   enableConnectButton () {
     this.rsConnectButton.disabled = false;
-    this.rsConnectButton.textContent = 'Connect';
+    this.rsConnectButton.textContent = this.trans.connect;
     this.rsConnectButton.classList.remove('rs-connecting');
   },
 
@@ -460,7 +483,7 @@ Widget.prototype = {
   setOffline () {
     if (this.online) {
       this.rsWidget.classList.add('rs-offline');
-      this.rsConnectedLabel.textContent = 'Offline';
+      this.rsConnectedLabel.textContent = this.trans.offline;
       this.online = false;
     }
   },
@@ -474,7 +497,7 @@ Widget.prototype = {
     if (!this.online) {
       this.rsWidget.classList.remove('rs-offline');
       if (this.active) {
-        this.rsConnectedLabel.textContent = 'Connected';
+        this.rsConnectedLabel.textContent = this.trans.connected;
       }
     }
     this.online = true;
@@ -537,7 +560,7 @@ Widget.prototype = {
     let now = new Date();
     let secondsSinceLastSync = Math.round((now.getTime() - this.lastSynced.getTime())/1000);
     let subHeadlineEl = document.querySelector('.rs-box-connected .rs-sub-headline');
-    subHeadlineEl.innerHTML = `Synced ${secondsSinceLastSync} seconds ago`;
+    subHeadlineEl.innerHTML = `${this.trans.synced} ${secondsSinceLastSync} ${this.trans.secondsAgo}`;
   },
 
   isSmallScreen () {
