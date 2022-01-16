@@ -153,6 +153,7 @@ polygon.rs-logo-shape,
   border: 1px solid #dcdcdc !important;
   border-radius: 3px !important;
   cursor: pointer !important;
+  margin: 0 !important;
 }
 .rs-button-small {
   padding: 0.6em 0.7em !important;
@@ -310,8 +311,10 @@ polygon.rs-logo-shape,
   word-break: keep-all !important;
 }
 .rs-connected-buttons, .rs-error-buttons {
-  flex: none !important;
+  display: flex;
+  gap: 5px;
 }
+
 .rs-disconnect:hover {
   border-color: #FF2D2D !important;
 }
