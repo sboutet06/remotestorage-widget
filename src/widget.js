@@ -182,9 +182,10 @@ Widget.prototype = {
     element.id = "remotestorage-widget";
     element.innerHTML = getHtml(this.trans);
 
+    const head = document.head || document.getElementsByTagName('head')[0]
     const style = document.createElement('style');
     style.innerHTML = widgetCss;
-    element.appendChild(style);
+    head.appendChild(style);
 
     const rsChooseButton = element.getElementsByClassName('rs-choose-rs')[0]
     if(!this.displayRsSync){
