@@ -158,7 +158,7 @@ polygon.rs-logo-shape,
 /* BUTTONS  */
 .rs-button {
   font: inherit ;
-  color: inherit ;
+  color: #333 ;
   background-color: #fff ;
   border: 1px solid #dcdcdc ;
   border-radius: 3px ;
