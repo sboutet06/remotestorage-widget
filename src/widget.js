@@ -308,6 +308,14 @@ Widget.prototype = {
     this.setModalClass();
   },
 
+  detach (elementId) {
+      const el = document.getElementById(elementId)
+      if(!el){
+        throw "Unable to find element with id " + elementId
+      }
+      el.innerHTML = ''
+  },
+
   setEventListeners () {
     this.rsSignInForm.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -565,7 +573,14 @@ Widget.prototype = {
 
   isSmallScreen () {
     return window.innerWidth < 421;
-  }
+  },
+
+  reconfigure(language, elementId){
+    this.trans = translations[language]
+    this.detach(elementId)
+    setTimeout(() => this.attach(elementId), 100)
+  },
+
 };
 
 export default Widget;
