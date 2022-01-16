@@ -1,7 +1,7 @@
 :root{
-  --rs-primary-color: #444;
-  --rs-secondary-color: #777;
-  --rs-bg-color: #fff;
+  --rs-primary-color: var(--rs-primary, #444);
+  --rs-secondary-color: var(--rs-secondary, #777);
+  --rs-bg-color: var(--rs-bg, #fff);
 }
 
 #remotestorage-widget {
